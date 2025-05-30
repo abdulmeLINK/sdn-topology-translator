@@ -123,9 +123,9 @@ def main():
         print("=" * 50)
         print(f"{Colors.MAGENTA}Starting Mininet network...{Colors.END}")
         
-        # Using OVSKernelSwitch (set in ZooTopo) and DefaultController (Mininet's default)
-        print(f"{Colors.YELLOW}Using OVSKernelSwitch and DefaultController for L2 learning...{Colors.END}")
-        net = Mininet(topo=topo) 
+        # Using OVSKernelSwitch with failMode='standalone' (set in ZooTopo) and no explicit controller
+        print(f"{Colors.YELLOW}Using OVSKernelSwitch in standalone mode, no explicit controller...{Colors.END}")
+        net = Mininet(topo=topo, controller=None) # Explicitly set controller=None
         net.start()
 
         print(f"{Colors.CYAN}Network started, waiting 2 seconds for components to initialize...{Colors.END}")
