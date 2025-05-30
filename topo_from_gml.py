@@ -127,7 +127,7 @@ def main():
             print(f"  Enabled STP on {switch.name}")
         
         print(f"{Colors.CYAN}STP enabled, waiting 15 seconds for convergence before CLI...{Colors.END}")
-        time.sleep(7) # Wait for 7 seconds for STP to converge
+        time.sleep(15) # Wait for 15 seconds for STP to converge
 
         print(f"{Colors.GREEN}Network setup complete! Ready for CLI.{Colors.END}")
         print(f"{Colors.CYAN}Available commands in CLI:{Colors.END}")
