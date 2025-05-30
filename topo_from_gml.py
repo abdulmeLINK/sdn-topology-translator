@@ -126,7 +126,7 @@ def main():
         
         # Using OVSKernelSwitch and explicit DefaultController for L2 learning
         print(f"{Colors.YELLOW}Using OVSKernelSwitch with DefaultController for L2 learning...{Colors.END}")
-        net = Mininet(topo=topo, controller=Controller, switch=OVSKernelSwitch) # Added controller=Controller and switch=OVSKernelSwitch
+        net = Mininet(topo=topo, controller=None, switch=OVSKernelSwitch) # Added controller=Controller and switch=OVSKernelSwitch
         net.start()
 
         print(f"{Colors.CYAN}Network started, waiting 2 seconds for components to initialize...{Colors.END}")
