@@ -107,6 +107,7 @@ class ZooTopo(Topo):
 
 def main():
     """Main function with enhanced error handling and feedback."""
+    setLogLevel('info') # Add this for more verbose Mininet output
     if len(sys.argv) != 2:
         print(f"{Colors.RED}Error: Missing GML file argument{Colors.END}")
         print("Usage: python topo_from_gml.py <topology.gml>")
