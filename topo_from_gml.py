@@ -1,6 +1,8 @@
 from mininet.topo import Topo
 from mininet.net import Mininet
+from mininet.node import Controller, OVSKernelSwitch, RemoteController
 from mininet.cli import CLI
+from mininet.log import setLogLevel
 import networkx as nx
 import sys
 import os
@@ -72,7 +74,8 @@ class ZooTopo(Topo):
             # Create valid switch name (remove spaces and special characters)
             switch_name = f's{i}'
             self.node_mapping[node] = switch_name
-            self.addSwitch(switch_name)
+            # Add switch with learning capabilities
+            self.addSwitch(switch_name, cls=OVSKernelSwitch, failMode='standalone')
             print(f"  {switch_name}: {node}")
         
         # Add links for each edge
@@ -110,19 +113,18 @@ def main():
         sys.exit(1)
     
     gml_file = sys.argv[1]
-    
     try:
         print(f"{Colors.BOLD}Starting SDN Topology Translator...{Colors.END}")
         print("=" * 50)
         
         # Create topology
         topo = ZooTopo(gml_file=gml_file)
-        
         print("=" * 50)
         print(f"{Colors.MAGENTA}Starting Mininet network...{Colors.END}")
         
-        # Create and start network
-        net = Mininet(topo=topo, controller=None)
+        # Create and start network with default controller
+        print(f"{Colors.YELLOW}Adding default controller for packet forwarding...{Colors.END}")
+        net = Mininet(topo=topo, controller=Controller)
         net.start()
         
         print(f"{Colors.GREEN}Network started successfully!{Colors.END}")
