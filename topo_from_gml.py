@@ -74,8 +74,8 @@ class ZooTopo(Topo):
             # Create valid switch name (remove spaces and special characters)
             switch_name = f's{i}'
             self.node_mapping[node] = switch_name
-            # Add switch with learning capabilities
-            self.addSwitch(switch_name, cls=OVSKernelSwitch, failMode='standalone')
+            # Add switch, DefaultController will handle learning
+            self.addSwitch(switch_name, cls=OVSKernelSwitch)
             print(f"  {switch_name}: {node}")
         
         # Add links for each edge
