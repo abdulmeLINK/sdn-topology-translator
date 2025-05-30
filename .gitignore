@@ -1,0 +1,71 @@
+# Operating System
+##################
+# Windows thumbnail cache files
+Thumbs.db
+ehthumbs.db
+# Windows folder config file
+Desktop.ini
+# macOS folder attributes
+.DS_Store
+
+# IDEs and Editors
+##################
+# VS Code
+.vscode/
+# JetBrains Rider / IntelliJ / CLion / PyCharm
+.idea/
+# Visual Studio
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+
+
+# Python
+##################
+__pycache__/
+*.py[cod]
+*.pyd
+*.egg-info/
+build/
+dist/
+develop-eggs/
+.eggs/
+env/
+venv/
+ENV/
+.env
+
+# Logs and databases
+##################
+*.log
+*.sqlite3
+
+# Compiled files and packages
+##################
+*.class
+*.jar
+*.war
+*.ear
+*.exe
+*.dll
+*.so
+*.dylib
+*.o
+*.obj
+*.pyc
+
+# Test coverage
+##################
+.coverage
+coverage/
+htmlcov/
+.nyc_output/
+
+# Misc
+##################
+.cache/
+*.zip
+*.tar.gz
+*.7z

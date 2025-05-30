@@ -1,0 +1,3 @@
+# Core dependencies for SDN Topology Translator
+networkx>=2.5
+mininet>=2.3.0
