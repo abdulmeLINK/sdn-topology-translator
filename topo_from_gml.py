@@ -122,9 +122,9 @@ def main():
         print("=" * 50)
         print(f"{Colors.MAGENTA}Starting Mininet network...{Colors.END}")
         
-        # Create and start network with default controller
-        print(f"{Colors.YELLOW}Adding default controller for packet forwarding...{Colors.END}")
-        net = Mininet(topo=topo, controller=Controller)
+        # Create and start network, relying on OVSKernelSwitch standalone mode
+        print(f"{Colors.YELLOW}Using OVSKernelSwitch with standalone mode (learning switches)...{Colors.END}")
+        net = Mininet(topo=topo) # Removed controller=Controller
         net.start()
         
         print(f"{Colors.GREEN}Network started successfully!{Colors.END}")
