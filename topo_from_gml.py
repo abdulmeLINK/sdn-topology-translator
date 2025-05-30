@@ -1,6 +1,6 @@
 from mininet.topo import Topo
 from mininet.net import Mininet
-from mininet.node import Controller, OVSKernelSwitch, RemoteController
+from mininet.node import OVSKernelSwitch
 from mininet.cli import CLI
 from mininet.log import setLogLevel
 import networkx as nx
@@ -20,26 +20,16 @@ class Colors:
     WHITE = '\033[97m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
-    END = '\033[0m'  # Reset to default color
+    END = '\033[0m'
 
 class ZooTopo(Topo):
     """Mininet topology created from GML file."""
     
     def __init__(self, gml_file=None, **opts):
-        """Initialize topology.
-        
-        Args:
-            gml_file: Path to GML file
-            **opts: Additional options for Topo
-        """
         if gml_file is None:
             raise ValueError("GML file path is required")
-        
-        # Validate file exists
         if not os.path.exists(gml_file):
             raise FileNotFoundError(f"GML file not found: {gml_file}")
-        
-        # Validate file is readable
         if not os.access(gml_file, os.R_OK):
             raise PermissionError(f"Cannot read GML file: {gml_file}")
         
@@ -52,14 +42,12 @@ class ZooTopo(Topo):
             raise RuntimeError(f"Failed to build topology from {gml_file}: {str(e)}")
     
     def _build_topology(self):
-        """Build the topology from GML file."""
         try:
             print(f"{Colors.CYAN}Loading topology from: {self.gml_file}{Colors.END}")
             G = nx.read_gml(self.gml_file)
         except Exception as e:
             raise ValueError(f"Invalid GML file format: {str(e)}")
         
-        # Validate graph has nodes
         if len(G.nodes()) == 0:
             raise ValueError("GML file contains no nodes")
         
@@ -67,20 +55,17 @@ class ZooTopo(Topo):
         edge_count = len(G.edges())
         print(f"{Colors.BLUE}Found {node_count} nodes and {edge_count} edges{Colors.END}")
         
-        # Create mapping for node names to valid Mininet names
         self.node_mapping = {}
         
         # Add switches for each node - using standalone mode for better connectivity
         print(f"{Colors.YELLOW}Creating switches...{Colors.END}")
         for i, node in enumerate(G.nodes()):
-            # Create valid switch name (remove spaces and special characters)
             switch_name = f's{i}'
             self.node_mapping[node] = switch_name
             # Add switch in standalone mode for L2 learning without controller
             self.addSwitch(switch_name, cls=OVSKernelSwitch, failMode='standalone')
             print(f"  {switch_name}: {node}")
         
-        # Add links for each edge
         print(f"{Colors.YELLOW}Creating links between switches...{Colors.END}")
         for src, dst in G.edges():
             src_switch = self.node_mapping[src]
@@ -88,7 +73,6 @@ class ZooTopo(Topo):
             self.addLink(src_switch, dst_switch)
             print(f"  {src_switch} <-> {dst_switch} ({src} <-> {dst})")
         
-        # Add a host to each switch
         print(f"{Colors.YELLOW}Creating hosts...{Colors.END}")
         for node in G.nodes():
             switch_name = self.node_mapping[node]
@@ -106,12 +90,10 @@ class ZooTopo(Topo):
         print(f"  - {edge_count + node_count} links")
 
     def build(self):
-        """Override build method - topology is built in __init__."""
         pass
 
 def main():
-    """Main function with enhanced error handling and feedback."""
-    setLogLevel('info') # Add this for more verbose Mininet output
+    setLogLevel('info')
     if len(sys.argv) != 2:
         print(f"{Colors.RED}Error: Missing GML file argument{Colors.END}")
         print("Usage: python topo_from_gml.py <topology.gml>")
@@ -123,10 +105,9 @@ def main():
         print(f"{Colors.BOLD}Starting SDN Topology Translator...{Colors.END}")
         print("=" * 50)
         
-        # Create topology
         topo = ZooTopo(gml_file=gml_file)
         print("=" * 50)
-        print(f"{Colors.MAGENTA}Starting Mininet network...{Colors.END}")
+        print(f"{Colors.MAGENTA}Starting Mininet network with standalone switches (no controller)...{Colors.END}")
         
         # Using OVSKernelSwitch in standalone mode - no external controller needed
         print(f"{Colors.YELLOW}Using OVSKernelSwitch in standalone mode for automatic L2 learning...{Colors.END}")
@@ -157,7 +138,6 @@ def main():
         print("   - exit: Stop network and exit")
         print("=" * 50)
         
-        # Start CLI
         CLI(net)
         
     except FileNotFoundError as e:
@@ -189,7 +169,6 @@ def main():
         sys.exit(1)
         
     finally:
-        # Ensure network cleanup
         try:
             if 'net' in locals():
                 print(f"{Colors.CYAN}Stopping network...{Colors.END}")
