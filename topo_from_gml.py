@@ -124,8 +124,13 @@ def main():
         
         # Create and start network, relying on OVSKernelSwitch standalone mode
         print(f"{Colors.YELLOW}Using OVSKernelSwitch with standalone mode (learning switches)...{Colors.END}")
-        net = Mininet(topo=topo) # Removed controller=Controller
+        net = Mininet(topo=topo) # OVSKernelSwitch is set in ZooTopo, DefaultController will be added
         net.start()
+
+        print(f"{Colors.YELLOW}Disabling STP on all switches...{Colors.END}")
+        for switch in net.switches:
+            switch.cmd(f'ovs-vsctl set bridge {switch.name} stp_enable=false')
+            print(f"  Disabled STP on {switch.name}")
         
         print(f"{Colors.GREEN}Network started successfully!{Colors.END}")
         print(f"{Colors.CYAN}Available commands in CLI:{Colors.END}")
