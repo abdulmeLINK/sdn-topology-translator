@@ -6,6 +6,7 @@ from mininet.log import setLogLevel
 import networkx as nx
 import sys
 import os
+import time  # Add this import
 
 # ANSI Color codes for terminal output
 class Colors:
@@ -74,8 +75,8 @@ class ZooTopo(Topo):
             # Create valid switch name (remove spaces and special characters)
             switch_name = f's{i}'
             self.node_mapping[node] = switch_name
-            # Add switch, DefaultController will handle learning
-            self.addSwitch(switch_name, cls=OVSKernelSwitch)
+            # Add switch with learning capabilities in standalone mode
+            self.addSwitch(switch_name, cls=OVSKernelSwitch, failMode='standalone')
             print(f"  {switch_name}: {node}")
         
         # Add links for each edge
@@ -122,17 +123,23 @@ def main():
         print("=" * 50)
         print(f"{Colors.MAGENTA}Starting Mininet network...{Colors.END}")
         
-        # Create and start network, relying on OVSKernelSwitch standalone mode
-        print(f"{Colors.YELLOW}Using OVSKernelSwitch with standalone mode (learning switches)...{Colors.END}")
-        net = Mininet(topo=topo) # OVSKernelSwitch is set in ZooTopo, DefaultController will be added
+        # Using OVSKernelSwitch (set in ZooTopo) and DefaultController (Mininet's default)
+        print(f"{Colors.YELLOW}Using OVSKernelSwitch and DefaultController for L2 learning...{Colors.END}")
+        net = Mininet(topo=topo) 
         net.start()
+
+        print(f"{Colors.CYAN}Network started, waiting 2 seconds for components to initialize...{Colors.END}")
+        time.sleep(2) # Wait for 2 seconds
 
         print(f"{Colors.YELLOW}Disabling STP on all switches...{Colors.END}")
         for switch in net.switches:
             switch.cmd(f'ovs-vsctl set bridge {switch.name} stp_enable=false')
             print(f"  Disabled STP on {switch.name}")
         
-        print(f"{Colors.GREEN}Network started successfully!{Colors.END}")
+        print(f"{Colors.CYAN}STP disabled, waiting 1 second before CLI...{Colors.END}")
+        time.sleep(1) # Wait for 1 second
+
+        print(f"{Colors.GREEN}Network setup complete! Ready for CLI.{Colors.END}") # Updated message
         print(f"{Colors.CYAN}Available commands in CLI:{Colors.END}")
         print("   - nodes: Show all nodes")
         print("   - links: Show all links")
