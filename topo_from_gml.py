@@ -7,6 +7,7 @@ import networkx as nx
 import sys
 import os
 import time  # Add this import
+import re # Add this import for sanitizing names
 
 # ANSI Color codes for terminal output
 class Colors:
@@ -69,14 +70,14 @@ class ZooTopo(Topo):
         # Create mapping for node names to valid Mininet names
         self.node_mapping = {}
         
-        # Add switches for each node
+        # Add switches for each node - using standalone mode for better connectivity
         print(f"{Colors.YELLOW}Creating switches...{Colors.END}")
         for i, node in enumerate(G.nodes()):
             # Create valid switch name (remove spaces and special characters)
             switch_name = f's{i}'
             self.node_mapping[node] = switch_name
-            # Add switch, to be managed by DefaultController
-            self.addSwitch(switch_name, cls=OVSKernelSwitch) # Removed failMode='standalone'
+            # Add switch in standalone mode for L2 learning without controller
+            self.addSwitch(switch_name, cls=OVSKernelSwitch, failMode='standalone')
             print(f"  {switch_name}: {node}")
         
         # Add links for each edge
@@ -91,10 +92,13 @@ class ZooTopo(Topo):
         print(f"{Colors.YELLOW}Creating hosts...{Colors.END}")
         for node in G.nodes():
             switch_name = self.node_mapping[node]
-            host_name = switch_name.replace('s', 'h')  # h0, h1, h2, etc.
+            # Use simple h{index} for host name to avoid length issues
+            host_name = switch_name.replace('s', 'h') # h0, h1, h2, etc.
+            gml_label = G.nodes[node].get('label', str(node)) # Get label or use node id
+
             self.addHost(host_name)
             self.addLink(host_name, switch_name)
-            print(f"  {host_name}: {node}")
+            print(f"  {host_name} (corresponds to GML Node '{gml_label}', connected to {switch_name})")
         
         print(f"{Colors.GREEN}Topology created successfully:{Colors.END}")
         print(f"  - {node_count} switches")
@@ -124,27 +128,32 @@ def main():
         print("=" * 50)
         print(f"{Colors.MAGENTA}Starting Mininet network...{Colors.END}")
         
-        # Using OVSKernelSwitch and explicit DefaultController for L2 learning
-        print(f"{Colors.YELLOW}Using OVSKernelSwitch with DefaultController for L2 learning...{Colors.END}")
-        net = Mininet(topo=topo, controller=Controller, switch=OVSKernelSwitch) # Added controller=Controller and switch=OVSKernelSwitch
+        # Using OVSKernelSwitch in standalone mode - no external controller needed
+        print(f"{Colors.YELLOW}Using OVSKernelSwitch in standalone mode for automatic L2 learning...{Colors.END}")
+        net = Mininet(topo=topo, switch=OVSKernelSwitch, controller=None)
         net.start()
 
-        print(f"{Colors.CYAN}Network started, waiting 2 seconds for components to initialize...{Colors.END}")
-        time.sleep(2) # Wait for 2 seconds
+        print(f"{Colors.CYAN}Network started, waiting 3 seconds for switches to initialize...{Colors.END}")
+        time.sleep(3) # Wait for 3 seconds for switches to come up
 
-        print(f"{Colors.YELLOW}Disabling STP on all switches...{Colors.END}")
+        print(f"{Colors.YELLOW}Host IP Addresses:{Colors.END}")
+        for host in net.hosts:
+            print(f"  {host.name}: {host.IP()}")
+
+        print(f"{Colors.YELLOW}Enabling STP on all switches...{Colors.END}")
         for switch in net.switches:
-            switch.cmd(f'ovs-vsctl set bridge {switch.name} stp_enable=false')
-            print(f"  Disabled STP on {switch.name}")
+            switch.cmd(f'ovs-vsctl set bridge {switch.name} stp_enable=true')
+            print(f"  Enabled STP on {switch.name}")
         
-        print(f"{Colors.CYAN}STP disabled, waiting 1 second before CLI...{Colors.END}")
-        time.sleep(1) # Wait for 1 second
+        print(f"{Colors.CYAN}STP enabled, waiting 15 seconds for convergence before CLI...{Colors.END}")
+        time.sleep(7) # Wait for 7 seconds for STP to converge
 
-        print(f"{Colors.GREEN}Network setup complete! Ready for CLI.{Colors.END}") # Updated message
+        print(f"{Colors.GREEN}Network setup complete! Ready for CLI.{Colors.END}")
         print(f"{Colors.CYAN}Available commands in CLI:{Colors.END}")
         print("   - nodes: Show all nodes")
-        print("   - links: Show all links")
+        print("   - links: Show all links") 
         print("   - pingall: Test connectivity")
+        print("   - ping h1 h2: Test connectivity between specific hosts")
         print("   - exit: Stop network and exit")
         print("=" * 50)
         
