@@ -76,7 +76,7 @@ class ZooTopo(Topo):
             switch_name = f's{i}'
             self.node_mapping[node] = switch_name
             # Add switch, to be managed by DefaultController
-            self.addSwitch(switch_name, cls=OVSKernelSwitch) # Removed failMode='standalone'
+            self.addSwitch(switch_name, cls=OVSKernelSwitch, failMode='standalone')
             print(f"  {switch_name}: {node}")
         
         # Add links for each edge
