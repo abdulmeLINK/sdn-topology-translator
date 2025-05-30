@@ -75,8 +75,8 @@ class ZooTopo(Topo):
             # Create valid switch name (remove spaces and special characters)
             switch_name = f's{i}'
             self.node_mapping[node] = switch_name
-            # Add switch with learning capabilities in standalone mode
-            self.addSwitch(switch_name, cls=OVSKernelSwitch, failMode='standalone')
+            # Add switch, to be managed by DefaultController
+            self.addSwitch(switch_name, cls=OVSKernelSwitch) # Removed failMode='standalone'
             print(f"  {switch_name}: {node}")
         
         # Add links for each edge
@@ -123,9 +123,9 @@ def main():
         print("=" * 50)
         print(f"{Colors.MAGENTA}Starting Mininet network...{Colors.END}")
         
-        # Using OVSKernelSwitch with failMode='standalone' (set in ZooTopo) and no explicit controller
-        print(f"{Colors.YELLOW}Using OVSKernelSwitch in standalone mode, no explicit controller...{Colors.END}")
-        net = Mininet(topo=topo, controller=None) # Explicitly set controller=None
+        # Using OVSKernelSwitch and explicit DefaultController for L2 learning
+        print(f"{Colors.YELLOW}Using OVSKernelSwitch with DefaultController for L2 learning...{Colors.END}")
+        net = Mininet(topo=topo, controller=Controller, switch=OVSKernelSwitch) # Added controller=Controller and switch=OVSKernelSwitch
         net.start()
 
         print(f"{Colors.CYAN}Network started, waiting 2 seconds for components to initialize...{Colors.END}")
