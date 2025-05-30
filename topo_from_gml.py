@@ -34,7 +34,8 @@ class ZooTopo(Topo):
         # Validate file exists
         if not os.path.exists(gml_file):
             raise FileNotFoundError(f"GML file not found: {gml_file}")
-          # Validate file is readable
+        
+        # Validate file is readable
         if not os.access(gml_file, os.R_OK):
             raise PermissionError(f"Cannot read GML file: {gml_file}")
         
@@ -62,23 +63,34 @@ class ZooTopo(Topo):
         edge_count = len(G.edges())
         print(f"{Colors.BLUE}Found {node_count} nodes and {edge_count} edges{Colors.END}")
         
+        # Create mapping for node names to valid Mininet names
+        self.node_mapping = {}
+        
         # Add switches for each node
         print(f"{Colors.YELLOW}Creating switches...{Colors.END}")
-        for node in G.nodes():
-            switch_name = f's{node}'
+        for i, node in enumerate(G.nodes()):
+            # Create valid switch name (remove spaces and special characters)
+            switch_name = f's{i}'
+            self.node_mapping[node] = switch_name
             self.addSwitch(switch_name)
+            print(f"  {switch_name}: {node}")
         
         # Add links for each edge
         print(f"{Colors.YELLOW}Creating links between switches...{Colors.END}")
         for src, dst in G.edges():
-            self.addLink(f's{src}', f's{dst}')
+            src_switch = self.node_mapping[src]
+            dst_switch = self.node_mapping[dst]
+            self.addLink(src_switch, dst_switch)
+            print(f"  {src_switch} <-> {dst_switch} ({src} <-> {dst})")
         
         # Add a host to each switch
         print(f"{Colors.YELLOW}Creating hosts...{Colors.END}")
         for node in G.nodes():
-            host_name = f'h{node}'
+            switch_name = self.node_mapping[node]
+            host_name = switch_name.replace('s', 'h')  # h0, h1, h2, etc.
             self.addHost(host_name)
-            self.addLink(host_name, f's{node}')
+            self.addLink(host_name, switch_name)
+            print(f"  {host_name}: {node}")
         
         print(f"{Colors.GREEN}Topology created successfully:{Colors.END}")
         print(f"  - {node_count} switches")
